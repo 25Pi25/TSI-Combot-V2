@@ -105,9 +105,9 @@ export function searchTactic(searchTerm: string): TacticInfo | null {
   return selected.rating != RATING_THRESHOLD ? tactics.find(tactic => tactic.name == selected.member)! : null;
 }
 
-export function tacticToString({ name, input, turns }: Tactic) {
+export function tacticToString({ name, input, turns }: Tactic, info?: TacticInfo) {
   let tacticString = name;
-  if (input) tacticString += ` {${input}}`;
+  if (input) tacticString += ` (${(info?.inputPrefix ?? "") + input})`;
   if (turns > 1) tacticString += ` [${turns} Turns]`;
-  return tacticString
+  return tacticString;
 }

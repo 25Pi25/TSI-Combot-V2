@@ -15,7 +15,7 @@ export const description = new SlashCommandBuilder()
 export default async function (interaction: ChatInputCommandInteraction) {
   const player = searchPlayer(interaction.options.getString("player")!);
   if (!player) return await interaction.reply("Player could not be found.");
-  
+
   const { name, initiative, tactics: tacticList } = player;
   if (!tacticList.length) return await interaction.reply("Player does not have any tactics to break down.");
 
@@ -23,8 +23,8 @@ export default async function (interaction: ChatInputCommandInteraction) {
   const tags = new Set(tacticList.flatMap(tactic => searchTactic(tactic.name)!.tags));
   const tagList = [];
   for (const tag of tags) {
-    const appliedTactics = tacticList.filter(tactic => searchTactic(tactic.name)!.tags.includes(tag)).map(t => tacticToString(t)).join(", ");
-    tagList.push(`${tag}: [${appliedTactics}]`);
+    const appliedTactics = tacticList.filter(tactic => searchTactic(tactic.name)!.tags.includes(tag)).map(t => tacticToString(t, searchTactic(t.name)!)).join(", ");
+    tagList.push(`${tag}: ${appliedTactics}`);
   }
   content += tagList.join("\n");
   content += "\n```";

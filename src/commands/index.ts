@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from 'discord.js';
 import * as ping from './util/ping';
 import * as ship from './util/ship';
+import * as eightball from './util/8ball';
 import * as resetgame from './game state/reset_game';
 import * as reloadgame from './game state/reload_game';
 import * as addplayer from './player/add_player';
@@ -14,6 +15,7 @@ import * as showgame from './output/show_game';
 export default {
   ping,
   ship,
+  '8ball': eightball,
   resetgame,
   reloadgame,
   addplayer,

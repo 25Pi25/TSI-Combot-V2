@@ -39,7 +39,7 @@ CLIENT.on('messageCreate', message => {
       const [message, success] = addTactic(name, null, target || null, Number(turns || 1), input || null);
       return [syntax, success, message];
     })
-    if (syntaxes.length > 1 || !syntaxes.some(([_, success]) => success)) {
+    if (syntaxes.length > 1 || !syntaxes.every(([_, success]) => success)) {
       const failedSyntaxes = syntaxes.filter(([_, success]) => !success).map(([syntax, _, message]) => `${syntax} (${message})`).join(", ");
       message.channel.send(`The following syntaxes failed: ${failedSyntaxes}`)
         .then(m => setTimeout(() => m.delete(), 10000));

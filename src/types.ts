@@ -36,7 +36,7 @@ export interface TacticInfo extends Readonly<object> {
   tags: ReadonlyArray<TacticTag>
   category: Category
   canStack: boolean // can two people apply this to the target?
-  inputDesc?: string // only if the input matters
+  inputPrefix?: string // for the frontend
 }
 
 export interface Tactic {
@@ -62,7 +62,7 @@ export const tactics: TacticInfo[] = [
     tags: ['AC'],
     category: 'Buff',
     canStack: true,
-    inputDesc: "The amount of Bolster stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Empower",
@@ -72,7 +72,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Damage'],
     category: 'Buff',
     canStack: true,
-    inputDesc: "The amount of Empower stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Focusing",
@@ -82,7 +82,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Accuracy'],
     category: 'Buff',
     canStack: true,
-    inputDesc: "The amount of Focusing stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Study",
@@ -155,7 +155,7 @@ export const tactics: TacticInfo[] = [
     tags: ['AC'],
     category: 'Debuff',
     canStack: true,
-    inputDesc: "The amount of Undermine stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Enfeeble",
@@ -165,7 +165,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Damage'],
     category: 'Debuff',
     canStack: true,
-    inputDesc: "The amount of Enfeeble stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Distracting",
@@ -175,7 +175,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Accuracy'],
     category: 'Debuff',
     canStack: true,
-    inputDesc: "The amount of Distracting stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Taunt",
@@ -194,7 +194,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Limited Actions'],
     category: 'Debuff',
     canStack: false,
-    inputDesc: "The slot of the move disabled"
+    inputPrefix: "Move "
   },
   {
     name: "Deep Wounds",
@@ -240,7 +240,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Accuracy', 'Skill Check'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Burning",
@@ -250,7 +250,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Damage'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Confusion",
@@ -260,7 +260,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Skill Check', 'Limited Actions'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Poison",
@@ -270,7 +270,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Damage'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Flinching",
@@ -280,7 +280,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Standard Actions'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Frozen",
@@ -290,7 +290,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Standard Actions'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Trapping",
@@ -300,7 +300,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Status Condition', 'Standard Actions', 'Damage'],
     category: 'Status Condition',
     canStack: false,
-    inputDesc: "The DC of the status condition"
+    inputPrefix: "DC "
   },
   {
     name: "Bodyguard",
@@ -337,7 +337,7 @@ export const tactics: TacticInfo[] = [
     tags: ['AC'],
     category: 'Miscellaneous',
     canStack: true,
-    inputDesc: "The amount of Exhausting stacks applied"
+    inputPrefix: "x"
   },
   {
     name: "Mega Form",
@@ -419,7 +419,7 @@ export const tactics: TacticInfo[] = [
     tags: ['Accuracy'],
     category: 'Archetype',
     canStack: true,
-    inputDesc: "The amount of the maximized Helping Hand roll"
+    inputPrefix: "+"
   },
   {
     name: "Z-Menace",
@@ -510,7 +510,7 @@ export const tactics: TacticInfo[] = [
     tags: ['AC'],
     category: 'Ring',
     canStack: false,
-    inputDesc: "The user's CHA modifier"
+    inputPrefix: "+"
   },
   {
     name: "Typemint",
@@ -556,7 +556,6 @@ export const tactics: TacticInfo[] = [
     tags: ['Accuracy', 'Skill Check'],
     category: 'Action',
     canStack: true,
-    inputDesc: "Your CHA modifier if you have a Helping Ring equipped"
   },
   {
     name: "Fainted",

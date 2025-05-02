@@ -9,15 +9,16 @@ export const description = new SlashCommandBuilder()
     .setName("person1")
     .setDescription("The first person.")
     .setRequired(true)
+    .setMaxLength(100)
   )
   .addStringOption(option => option
     .setName("person2")
     .setDescription("The second person.")
     .setRequired(true)
+    .setMaxLength(100)
   );
 
 export default async function (interaction: ChatInputCommandInteraction) {
-  if (!inBotChannel(interaction)) return;
   const person1 = interaction.options.getString("person1")!;
   const person2 = interaction.options.getString("person2")!;
   const [p1, p2] = [person1, person2].sort();

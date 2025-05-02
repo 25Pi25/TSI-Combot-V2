@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, Message, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import { defaultState } from '../../types';
-import { isAdmin, tacticToString } from '../../util';
+import { isAdmin, searchTactic, tacticToString } from '../../util';
 
 export const description = new SlashCommandBuilder()
   .setName("showgame")
@@ -15,7 +15,7 @@ export default async function (interaction: ChatInputCommandInteraction) {
       playerInfo += ": ";
       const tacticList: string[] = [];
       for (const tactic of tactics) {
-        tacticList.push(tacticToString(tactic));
+        tacticList.push(tacticToString(tactic, searchTactic(tactic.name)!));
       }
       playerInfo += tacticList.join(", ");
     }

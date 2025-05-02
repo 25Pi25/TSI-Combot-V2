@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>TSI Combot Panel</title>
   <!-- api font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,9 +47,10 @@
     socket.on('contentUpdate', (game, tactics) => {
       const playerGrid = game.players.sort((a, b) => b.initiative - a.initiative).map(player => {
         const tacticList = player.tactics.map(tactic => {
-          const valenceTag = tactics.find(t => t.name == tactic.name).effectType == "positive" ? "btn-success" : "btn-danger";
+          const tacticInfo = tactics.find(t => t.name == tactic.name);
+          const valenceTag = tacticInfo.effectType == "positive" ? "btn-success" : "btn-danger";
           return `<button class="btn ${valenceTag} mx-1">
-            ${tactic.name} ${tactic.input ? `(${tactic.input})` : ""} ${tactic.turns > 1 ? `[${tactic.turns} Turns]` : ""} ${player.name != tactic.user ? `{${tactic.user}}` : ""}
+            ${tactic.name} ${tactic.input ? `(${(tacticInfo.inputPrefix ?? "") + tactic.input })` : ""} ${tactic.turns > 1 ? `[${tactic.turns} Turns]` : ""} ${player.name != tactic.user ? `{${tactic.user}}` : ""}
           </button>`
         });
         const playerColor = game.currentPlayer == player.name ? "#b7e1cd" :
