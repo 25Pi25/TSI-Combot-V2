@@ -21,6 +21,6 @@ export default async function (interaction: ChatInputCommandInteraction) {
   const person1 = interaction.options.getString("person1")!;
   const person2 = interaction.options.getString("person2")!;
   const [p1, p2] = [person1, person2].sort();
-  const percentage = (Math.round(seedrandom(`${normalized(p1)} ${normalized(p2)}`).quick()) * 100).toFixed(0);
+  const percentage = Math.round(seedrandom(`${normalized(p1)} ${normalized(p2)}`).quick() * 100);
   await interaction.reply(`${person1} x ${person2}: ${percentage}%`);
 }
