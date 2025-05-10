@@ -82,7 +82,8 @@ export default async function (interaction: ChatInputCommandInteraction) {
   }
 
   // FINALLY remove it
-  target.tactics.splice(target.tactics.indexOf(tacticToRemove), 1);
+  // TODO: if any conditions for removing need to be changed do it here
+  target.tactics = target.tactics.filter(t => t.user != tacticToRemove.user || t.name != tacticToRemove.name);
   // TODO: add snatchability
   await interaction.reply(`Tactic "${tacticToRemove.name}" successfully removed!`);
 }

@@ -15,7 +15,6 @@
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
-    "react-dom": "^19.1.0",
     "seedrandom": "^3.0.5",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",

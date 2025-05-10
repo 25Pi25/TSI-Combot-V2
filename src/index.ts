@@ -7,10 +7,7 @@ import commands from './commands/index';
 import { app, CLIENT, io, normalized, server } from './util';
 import slashBuilder from './commands/builder'
 import { tactics } from './types';
-import { AutocompleteInteraction, Component } from 'discord.js';
-import express from 'express';
-import { renderToStaticMarkup, renderToString } from 'react-dom/server'
-import React from 'react';
+import { AutocompleteInteraction } from 'discord.js';
 import path from 'path';
 import { addTactic } from './commands/game state/add_tactic';
 dotenv.config();
@@ -73,6 +70,7 @@ async function onAutocomplete(interaction: AutocompleteInteraction) {
     await interaction.respond(filtered.map(name => ({ name, value: name })).splice(0, 25));
   }
 }
+
 process.on('uncaughtException', console.error);
 CLIENT.login(process.env.TOKEN);
 
