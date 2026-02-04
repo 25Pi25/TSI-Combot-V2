@@ -1,6 +1,4 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { inBotChannel, normalized } from '../../util';
-import seedrandom from 'seedrandom';
 
 export const description = new SlashCommandBuilder()
   .setName("8ball")
@@ -37,5 +35,5 @@ const RESPONSES = [
 
 export default async function (interaction: ChatInputCommandInteraction) {
   const question = interaction.options.getString("question")!;
-  await interaction.reply(`\`${question}\`: ${RESPONSES[Math.floor(Math.random() * RESPONSES.length)]}`);
+  await interaction.reply(`${question}: ${RESPONSES[Math.floor(Math.random() * RESPONSES.length)]}`.noPings());
 }

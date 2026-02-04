@@ -9,5 +9,5 @@ export const description = new SlashCommandBuilder()
 export default async function (interaction: ChatInputCommandInteraction) {
   if (!isAdmin(interaction)) return;
   Object.assign(global.game, createDeepProxy(JSON.parse(readFileSync("./data/game.json", 'utf8')), save));
-  await interaction.reply("Game reloaded from last save!");
+  await interaction.reply("Game reloaded from last save!".ephemeral());
 }

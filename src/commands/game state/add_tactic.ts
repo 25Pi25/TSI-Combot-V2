@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder, type Message } from 'discord.js';
 import { defaultState, PlayerInfo, Tactic, TacticInfo, tactics } from '../../types';
 import { isActiveGame, isAdmin, searchName, searchPlayer, searchTactic } from '../../util';
+import { removeTactic } from './remove_tactic';
 
 export const description = new SlashCommandBuilder()
   .setName("addtactic")
@@ -38,8 +39,12 @@ export default async function (interaction: ChatInputCommandInteraction) {
   const input = interaction.options.getString('input');
   const turns = interaction.options.getInteger('turns') ?? 1;
 
-  const [message] = addTactic(queryTactic, queryUser, queryTarget, turns, input);
-  await interaction.reply(message);
+  const [message, success] = addTactic(queryTactic, queryUser, queryTarget, turns, input);
+  if (!success) {
+    await interaction.reply(message.ephemeral());
+  } else {
+    await interaction.reply(message);
+  }
 }
 
 // TODO: abstract the operation to work on a raw command
@@ -49,7 +54,8 @@ export function addTactic(
   queryUser: string | null,
   queryTarget: string | null,
   turns = 1,
-  input: string | null
+  input: string | null,
+  override = false
 ): [string, boolean] {
   const tactic = searchTactic(queryTactic);
   if (!tactic) return [`${queryTactic} did not match any known tactics.`, false]
@@ -69,7 +75,11 @@ export function addTactic(
   // for now, i will not allow a user to apply the same tactic to themselves when stackable (condition 2)
   if (!tactic.canStack || target.tactics.find(t => t.name == finalState.name && t.user == finalState.user)) {
     const existingTactic = target.tactics.find(({ name }) => name == finalState.name);
-    if (existingTactic) return ["Tactic is already applied, skipping.", false]
+    if (existingTactic && !override) return ["Tactic is already applied, skipping.", false]
+    else if (existingTactic) {
+      const [_, success] = removeTactic(tactic.name, target.name, user);
+      if (!success) throw new Error("Could not remove tactic that already exists.")
+    }
   }
 
   // validate and then do this shit so the internals aren't fucked up

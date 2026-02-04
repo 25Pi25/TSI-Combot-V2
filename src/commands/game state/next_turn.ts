@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { isAdmin, searchPlayer, searchTactic } from '../../util';
 import { PlayerInfo, Tactic, tactics } from 'src/types';
+import { removeTactic } from './remove_tactic';
 
 export const description = new SlashCommandBuilder()
   .setName("nextturn")
@@ -8,8 +9,12 @@ export const description = new SlashCommandBuilder()
 
 export default async function (interaction: ChatInputCommandInteraction) {
   if (!isAdmin(interaction)) return;
-  const messageLogs = [];
+  const messageLogs = nextTurn();
+  await interaction.reply(`\`\`\`\n${messageLogs.join("\n")}\n\`\`\``);
+}
 
+export function nextTurn() {
+  const messageLogs = [];
   // TODO: add trick room option that calculates in reverse
   // TODO: also add an option to sort players via priority
   // mark current player done, then check for top of the round, then find the next available
@@ -38,18 +43,21 @@ export default async function (interaction: ChatInputCommandInteraction) {
         (tacticInfo.duration == "Start of the user's turn" && tactic.user == nextPlayer.name) ||
         (tacticInfo.duration == "Start of the target's turn" && player.name == nextPlayer.name)
       ) {
-        messageLogs.push(tickTactic(player, tactic));
+        messageLogs.push(tickTactic(player, tactic, tactic.user));
+      }
+      if (player.name == nextPlayer.name && tacticInfo.category == 'Status Condition') {
+        messageLogs.push(`Afflicted with ${tacticInfo.name} (DC ${tactic.input})! Roll a Status Saving Throw!`)
       }
     });
   }
-  await interaction.reply(`\`\`\`\n${messageLogs.join("\n")}\n\`\`\``);
+  return messageLogs;
 }
 
-function tickTactic(player: PlayerInfo, tactic: Tactic): string | null {
+function tickTactic(player: PlayerInfo, tactic: Tactic, user: string | null): string | null {
   if (tactic.turns > 1) {
     tactic.turns--;
     return `${tactic.name} from ${player.name} is at ${tactic.turns} turn(s).`;
   }
-  player.tactics.splice(player.tactics.indexOf(tactic), 1);
+  removeTactic(tactic.name, player.name, user);
   return `${tactic.name} was removed from ${player.name}.`;
 }

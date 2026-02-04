@@ -1,13 +1,14 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { Name, PlayerInfo, Tactic, TacticInfo, tactics } from './types';
 import config from './config';
-import { writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import stringComparison from 'string-comparison';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import Database from 'better-sqlite3';
 
-export const PREFIX = '!';
+export const PREFIX = '?';
 export const CLIENT = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -19,6 +20,17 @@ export const CLIENT = new Client({
 export const app = express();
 export const server = http.createServer(app);
 export const io = new Server(server);
+
+export const db = new Database('./data/game.db');
+export const lucky7Toggles = loadLucky7Toggles();
+function loadLucky7Toggles(): Record<string, number> {
+  const all = db.prepare("SELECT * FROM L7").all() as { user: string, toggle: number }[];
+  const result: Record<string, number> = {};
+  for (const { user, toggle } of all) {
+    result[user] = toggle;
+  }
+  return result;
+}
 
 export function normalized(name: Name) {
   return name.toLowerCase().trim();

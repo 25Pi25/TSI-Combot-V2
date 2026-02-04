@@ -13,10 +13,7 @@ export default async function (interaction: ChatInputCommandInteraction) {
     let playerInfo = `${name} (${initiative})`;
     if (tactics.length) {
       playerInfo += ": ";
-      const tacticList: string[] = [];
-      for (const tactic of tactics) {
-        tacticList.push(tacticToString(tactic, searchTactic(tactic.name)!));
-      }
+      const tacticList = tactics.map(tactic => tacticToString(tactic, searchTactic(tactic.name)!));
       playerInfo += tacticList.join(", ");
     }
     playerContent.push(playerInfo);

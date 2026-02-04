@@ -2,6 +2,11 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, SlashCommandOptionsOn
 import * as ping from './util/ping';
 import * as ship from './util/ship';
 import * as eightball from './util/8ball';
+import * as blindpick from './util/blindpick';
+import * as pitch from './util/pitch';
+import * as randompc from './util/randompc';
+import * as roll from './util/roll';
+import * as lucky7 from './util/lucky7';
 import * as resetgame from './game state/reset_game';
 import * as reloadgame from './game state/reload_game';
 import * as addplayer from './player/add_player';
@@ -16,6 +21,7 @@ export default {
   ping,
   ship,
   '8ball': eightball,
+  blindpick,
   resetgame,
   reloadgame,
   addplayer,
@@ -24,7 +30,11 @@ export default {
   removetactic,
   nextturn,
   breakdown,
-  showgame
+  showgame,
+  pitch,
+  randompc,
+  roll,
+  lucky7
 } satisfies CommandModule as CommandModule;
 
 type CommandModule = Record<string, {

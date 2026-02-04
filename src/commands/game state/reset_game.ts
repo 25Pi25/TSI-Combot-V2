@@ -18,5 +18,5 @@ export default async function (interaction: ChatInputCommandInteraction) {
     players: global.game.players.map(player => ({ ...player, tactics: [] }))
   };
   Object.assign(global.game, newDefaultState);
-  await interaction.reply("Game reset!");
+  await interaction.reply("Game reset!".ephemeral());
 }

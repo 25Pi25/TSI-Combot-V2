@@ -36,58 +36,43 @@ export default async function (interaction: ChatInputCommandInteraction) {
   const queryTactic = interaction.options.getString('tacticname')!;
   const queryTarget = interaction.options.getString('target')!;
   const queryUser = interaction.options.getString('user');
+  // TODO: add redirect functionality
   const queryRedirectTo = interaction.options.getString('redirect_to');
 
-  const tactic = searchTactic(queryTactic);
-  if (!tactic) {
-    await interaction.reply(`${queryTactic} did not match any known tactics.`);
-    return;
+  const [message, success] = removeTactic(queryTactic, queryTarget, queryUser);
+  if (!success) {
+    await interaction.reply(message.ephemeral());
+  } else {
+    await interaction.reply(message);
   }
+}
+
+export function removeTactic(tacticName: string, queryTarget: string | null, queryUser: string | null): [string, boolean] {
+  const tactic = searchTactic(tacticName);
+  if (!tactic) return [`${tacticName} did not match any known tactics.`, false];
   // by default, target the current user
   const user = searchName(queryUser, true);
-  if (queryUser && !user) {
-    await interaction.reply(`${queryUser} did not match any known users.`);
-    return;
-  }
+  if (queryUser && !user) return [`${queryUser} did not match any known users.`, false];
   // same for target
-  const target = searchPlayer(queryTarget);
-  if (!target) {
-    await interaction.reply(`${queryTarget} did not match any known users.`);
-    return;
-  }
+  const target = searchPlayer(queryTarget ?? global.game.currentPlayer);
+  if (!target) return [`${queryTarget} did not match any known users.`, false];
 
-  const redirectTo = searchPlayer(queryRedirectTo);
-  if (queryRedirectTo && !redirectTo) {
-    await interaction.reply(`${queryRedirectTo} did not match any known users.`);
-    return;
-  }
+  // const redirectTo = searchPlayer(queryRedirectTo);
+  // if (queryRedirectTo && !redirectTo) return [`${queryRedirectTo} did not match any known users.`, false];
 
   // find applied tactic under this list
   const appliedTactics = target.tactics.filter(curTactic => curTactic.name == tactic.name);
 
-  if (!appliedTactics.length) {
-    await interaction.reply("User does not have this tactic applied.");
-    return;
-  }
+  if (!appliedTactics.length) return ["User does not have this tactic applied.", false];
   // if there's more than one tactic but you didn't specify the user what am i supposed to pick
-  if (appliedTactics.length > 1 && !user) {
-    await interaction.reply(`There were multiple tactics under ${tactic.name}. Please specify the user.`);
-    return;
-  }
+  if (appliedTactics.length > 1 && !user) return [`There were multiple tactics under ${tactic.name}. Please specify the user.`, false];
 
   const tacticToRemove = user ? appliedTactics.find(tactic => tactic.user == user) : appliedTactics[0];
-  if (!tacticToRemove) {
-    await interaction.reply(`The target had the tactic, but it was not applied by ${user}.`);
-    return;
-  }
+  if (!tacticToRemove) return [`The target had the tactic, but it was not applied by ${user}.`, false];
 
   // FINALLY remove it
   // TODO: if any conditions for removing need to be changed do it here
   target.tactics = target.tactics.filter(t => t.user != tacticToRemove.user || t.name != tacticToRemove.name);
   // TODO: add snatchability
-  await interaction.reply(`Tactic "${tacticToRemove.name}" successfully removed!`);
-}
-
-function removeTactic(tacticName: string, target: string, user?: string): Tactic | null {
-  throw new Error("Not Implemented");
+  return [`Tactic "${tacticToRemove.name}" successfully removed!`, true];
 }

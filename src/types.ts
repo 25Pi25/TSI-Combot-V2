@@ -1,9 +1,21 @@
 import { readFileSync } from 'fs'
 import { createDeepProxy, save } from './util'
+import { InteractionReplyOptions, MessageFlags } from 'discord.js'
 
 declare global {
   var game: Game
+  interface String {
+    noPings(): InteractionReplyOptions
+    ephemeral(): InteractionReplyOptions
+  }
 }
+String.prototype.noPings = function (): InteractionReplyOptions {
+  return { content: this.toString(), allowedMentions: { users: [] } }
+};
+String.prototype.ephemeral = function (): InteractionReplyOptions {
+  return { content: this.toString(), flags: MessageFlags.Ephemeral }
+};
+
 export interface Game {
   currentPlayer: Name | null
   players: PlayerInfo[]

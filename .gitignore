@@ -4,3 +4,5 @@ node_modules/*
 .env
 *.sh
 .vscode
+dist/
+package-lock.json

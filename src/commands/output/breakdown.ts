@@ -1,6 +1,5 @@
-import { ChatInputCommandInteraction, Message, MessageFlags, SlashCommandBuilder } from 'discord.js';
-import { defaultState, tactics } from '../../types';
-import { isAdmin, searchPlayer, searchTactic, tacticToString } from '../../util';
+import { ChatInputCommandInteraction, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { searchPlayer, searchTactic, tacticToString } from '../../util';
 
 export const description = new SlashCommandBuilder()
   .setName("breakdown")
@@ -14,10 +13,10 @@ export const description = new SlashCommandBuilder()
 
 export default async function (interaction: ChatInputCommandInteraction) {
   const player = searchPlayer(interaction.options.getString("player")!);
-  if (!player) return await interaction.reply("Player could not be found.");
+  if (!player) return await interaction.reply("Player could not be found.".ephemeral());
 
   const { name, initiative, tactics: tacticList } = player;
-  if (!tacticList.length) return await interaction.reply("Player does not have any tactics to break down.");
+  if (!tacticList.length) return await interaction.reply("Player does not have any tactics to break down.".ephemeral());
 
   let content = `\`\`\`\nBreakdown for ${name} (${initiative}):\n`;
   const tags = new Set(tacticList.flatMap(tactic => searchTactic(tactic.name)!.tags));
@@ -28,5 +27,5 @@ export default async function (interaction: ChatInputCommandInteraction) {
   }
   content += tagList.join("\n");
   content += "\n```";
-  await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+  await interaction.reply(content.ephemeral());
 }
