@@ -35,6 +35,9 @@ function loadLucky7Toggles(): Record<string, number> {
 export function normalized(name: Name) {
   return name.toLowerCase().trim();
 }
+export function titleCase(string: string) {
+  return string[0].toUpperCase() + string.slice(1);
+}
 
 // TODO: this is a lot of repetition LOL
 export function inBotChannel(interaction: ChatInputCommandInteraction, reply = true) {

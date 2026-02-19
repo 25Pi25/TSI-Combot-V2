@@ -28,7 +28,7 @@ CLIENT.on('messageCreate', async message => {
     const [reply, success] = roll(message.content.slice(2).trim(), message.author.id);
     const item = await message.channel.send({
       content: typeof reply === 'string' ? reply : `<@${message.author.id}>`,
-      embeds: typeof reply === 'string' ? [] : [reply],
+      embeds: typeof reply === 'string' ? [] : reply,
       allowedMentions: { users: [] }
     });
     if (!success) setTimeout(() => item.delete(), 10_000);

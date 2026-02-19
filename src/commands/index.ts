@@ -7,6 +7,7 @@ import * as pitch from './util/pitch';
 import * as randompc from './util/randompc';
 import * as roll from './util/roll';
 import * as lucky7 from './util/lucky7';
+import * as random_move from './util/random_move';
 import * as resetgame from './game state/reset_game';
 import * as reloadgame from './game state/reload_game';
 import * as addplayer from './player/add_player';
@@ -34,7 +35,8 @@ export default {
   pitch,
   randompc,
   roll,
-  lucky7
+  lucky7,
+  random_move
 } satisfies CommandModule as CommandModule;
 
 type CommandModule = Record<string, {

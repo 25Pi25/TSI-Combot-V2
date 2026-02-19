@@ -24,16 +24,18 @@ export default async function (interaction: ChatInputCommandInteraction) {
   const [message, success] = roll(interaction.options.getString("die")!, interaction.user.id);
   const meta: InteractionReplyOptions = { flags: success ? undefined : MessageFlags.Ephemeral };
   if (typeof message === 'string') meta.content = message;
-  else meta.embeds = [message];
+  else meta.embeds = message;
   interaction.reply(meta);
+}
+
+interface RichNumber {
+  string: string
+  value: number
 }
 
 abstract class RollToken {
   abstract toString(): string
-  abstract eval(): { // may throw an error
-    string: string
-    value: number
-  }
+  abstract eval(): RichNumber // may throw an error
 }
 
 class NumberToken extends RollToken {
@@ -47,7 +49,7 @@ class NumberToken extends RollToken {
 
 class DiceToken extends RollToken {
   // TODO: make static context while accessing non-static content
-  public VALUE_MODS: Record<string, (rolls: number[], value?: number) => number[]> = {
+  public VALUE_MODS: Record<string, (rolls: RichNumber[], value?: number) => RichNumber> = {
     kh: this.keepHigh,
     kl: this.keepLow,
     adv: this.keepHigh,
@@ -58,7 +60,7 @@ class DiceToken extends RollToken {
     min: this.min,
     rr: this.reroll
   }
-  public NON_VALUE_MODS: Record<string, (rolls: number[]) => number[]> = {
+  public NON_VALUE_MODS: Record<string, (rolls: RichNumber[]) => RichNumber> = {
     exp: this.explode
   }
   constructor(public count: number,
@@ -90,53 +92,102 @@ class DiceToken extends RollToken {
     if (this.modValue) result += `:${this.modValue}`;
     return result;
   }
-  public eval() {
-    let result = [];
-    for (let i = 0; i < this.count; i++) {
-      let roll = rng(this.sides);
-      result.push(roll);
-    }
-    if (this.modName && this.modName in this.VALUE_MODS) {
-      result = this.VALUE_MODS[this.modName].bind(this)(result, this.modValue!);
-    } else if (this.modName && this.modName in this.NON_VALUE_MODS) {
-      result = this.NON_VALUE_MODS[this.modName].bind(this)(result);
-    }
+  public rollDie(): RichNumber {
+    let roll = rng(this.sides);
+    const isLucky = this.lucky7 && roll == 7;
     return {
-      string: `[${result.map(val => this.lucky7 && val == 7 ? "7 (20)" : val.toString()).join(", ")}]`,
-      value: result.reduce((a, b) => a + (this.lucky7 && b == 7 ? 20 : b), 0)
+      string: isLucky ? "7 (20)" : roll.toString(),
+      value: isLucky ? 20 : roll
     };
   }
-  public keepHigh(rolls: number[], value = 1) {
-    if (value > rolls.length) throw new Error("Too many dice to keep high.");
-    return rolls.sort().splice(rolls.length - value);
-  }
-  public keepLow(rolls: number[], value = 1) {
-    if (value > rolls.length) throw new Error("Too many dice to keep low.");
-    return rolls.sort().splice(0, value);
-  }
-  public add(rolls: number[], value = 1) { return rolls.map(roll => roll + value); }
-  public sub(rolls: number[], value = 1) { return rolls.map(roll => roll - value); }
-  public max(rolls: number[], value = this.sides) { return rolls.map(roll => Math.min(roll, value)) }
-  public min(rolls: number[], value = this.sides) { return rolls.map(roll => Math.max(roll, value)) }
-  public explode(rolls: number[]) {
-    for (let i = 0; i < rolls.length && i < DIE_UPPER_BOUND; i++) {
-      if (rolls[i] !== this.sides) continue;
-      rolls.push(rng(this.sides));
+  public eval() {
+    let result: RichNumber[] = [];
+    for (let i = 0; i < this.count; i++) {
+      result.push(this.rollDie());
     }
-    return rolls;
+    if (this.modName && this.modName in this.VALUE_MODS) {
+      return this.VALUE_MODS[this.modName].bind(this)(result, this.modValue!);
+    } else if (this.modName && this.modName in this.NON_VALUE_MODS) {
+      return this.NON_VALUE_MODS[this.modName].bind(this)(result);
+    }
+    return this.standardJoin(result);
   }
-  public reroll(rolls: number[], value = this.sides) {
-    if (value > rolls.length) throw new Error("Cannot reroll above given value.");
-    return rolls.map(roll => roll <= value ? rng(this.sides) : roll);
+  public standardJoin = (numbers: RichNumber[]) => ({
+    string: `[${numbers.map(val => val.string).join(", ")}]`,
+    value: numbers.reduce((a, b) => a + b.value, 0)
+  });
+  public keepHigh(rolls: RichNumber[], value = 1) {
+    if (value > rolls.length) throw new Error("Too many dice to keep high.");
+    const midPoint = rolls.length - value;
+    return this.standardJoin(rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
+      string: index < midPoint ? `~~${string}~~` : string,
+      value: index < midPoint ? 0 : value
+    })));
+  }
+  public keepLow(rolls: RichNumber[], value = 1) {
+    if (value > rolls.length) throw new Error("Too many dice to keep low.");
+    const midPoint = rolls.length - value;
+    return this.standardJoin(rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
+      string: index >= midPoint ? `~~${string}~~` : string,
+      value: index >= midPoint ? 0 : value
+    })));
+  }
+  public add(rolls: RichNumber[], value = 1) { return this.standardJoin(rolls.map(roll => (roll.value = roll.value + value, roll))); }
+  public sub(rolls: RichNumber[], value = 1) { return this.standardJoin(rolls.map(roll => (roll.value = roll.value - value, roll))); }
+  public max(rolls: RichNumber[], max = this.sides) {
+    return this.standardJoin(rolls.map(({ string, value }) => ({
+      string: value > max ? `~~${string}~~ ${max}` : string,
+      value: Math.min(value, max)
+    })));
+  }
+  public min(rolls: RichNumber[], min = this.sides) {
+    return this.standardJoin(rolls.map(({ string, value }) => ({
+      string: value < min ? `~~${string}~~ ${min}` : string,
+      value: Math.max(value, min)
+    })));
+  }
+  public explode(rolls: RichNumber[]) {
+    for (let i = 0; i < rolls.length && i < DIE_UPPER_BOUND; i++) {
+      if (rolls[i].value !== this.sides) continue;
+      rolls.push(this.rollDie());
+    }
+    return this.standardJoin(rolls.map(roll => roll.value != this.sides ? roll : {
+      string: `${roll.string} (!)`,
+      value: roll.value
+    }));
+  }
+  public reroll(rolls: RichNumber[], value = this.sides) {
+    if (value > this.sides) throw new Error("Cannot reroll above given value.");
+    return this.standardJoin(rolls.map(roll => {
+      if (roll.value > value) return roll;
+      const newRoll = this.rollDie();
+      return {
+        string: `~~${roll.string}~~ ${newRoll.string}`,
+        value: newRoll.value
+      };
+    }));
   }
 }
-// dice roll, text, ac/dc, ac/dc value
-const ROLL_REGEX = /^(.*?)(?:\|(?:(.*?)(?:(ac|dc) (\d+))|.+?))?$/i
+// dice roll, text, ac/dc, ac/dc value, other text (text/othertext is one or the other)
+const ROLL_REGEX = /^([^;]*?)(?:\|(?:([^;]*?)(?:(ac|dc) (\d+))|([^;]+?)))?$/i
 // dice count, dice sides, lucky 7, modifier name, modifier value, flat number
 const ROLL_TERM_REGEX = /^(\d*)d(\d+)(!?)(?:\/([a-z]+)(?:\:(\d+))?)?$|^(\d+)$/;
-export function roll(string: string, user: string): [string | APIEmbed, boolean] {
-  const [_, diceRoll, rawText, ACDC, DCString] = ROLL_REGEX.exec(string)!; // literally impossible to fail this check
-  const text = rawText?.trim();
+export function roll(string: string, user: string): [APIEmbed[], true] | [string, false] {
+  const diceTerms = string.split(";").filter(term => term);
+  if (diceTerms.length == 0) return ["No terms were given.", false];
+  if (diceTerms.length > 5) return ["Cannot roll more than 5 terms at a time.", false];
+  const embeds: APIEmbed[] = [];
+  for (const diceTerm of diceTerms) {
+    const [item, success] = rollTerm(diceTerm, user);
+    if (!success) return [item, success];
+    embeds.push(item);
+  }
+  return [embeds, true];
+}
+
+export function rollTerm(string: string, user: string): [APIEmbed, true] | [string, false] {
+  const [_, diceRoll, rawText, ACDC, DCString, otherText] = ROLL_REGEX.exec(string)!; // literally impossible to fail this check
+  const text = (rawText || otherText)?.trim();
   const DC = DCString && parseInt(DCString);
   const array = diceRoll.split(/([\+-])/);
   if (array.length > TERM_UPPER_BOUND * 2) return [`You can only have up to ${TERM_UPPER_BOUND} terms.`, false];
@@ -175,7 +226,7 @@ export function roll(string: string, user: string): [string | APIEmbed, boolean]
     else resultValue += value;
   }
   return [new EmbedBuilder()
-    .setTitle(text ? `${text}${ACDC ? ` (${ACDC.toUpperCase()} ${DC})` : ""}`: null)
+    .setTitle(text ? `${text}${ACDC ? ` (${ACDC.toUpperCase()} ${DC})` : ""}` : (ACDC ? `${ACDC.toUpperCase()} ${DC}` : null))
     .setDescription(`**Rolled: ${diceRoll}**\n${resultString} ➜ ${resultValue}`)
     .setColor(DC ? (resultValue >= DC ? "Green" : "Red") : "#323232")
     .toJSON(),
@@ -195,7 +246,7 @@ function string2Token(string: string, user: string): RollToken | null {
   return new DiceToken(
     parseInt(count || "1"),
     parseInt(sides),
-    lucky7 === '!' || (lucky7Toggles[user] == 1 && parseInt(sides) == 20),
+    (lucky7 === '!') !== (lucky7Toggles[user] == 1 && parseInt(sides) == 20),
     modName,
     modValue === undefined ? modValue : parseInt(modValue)
   );
