@@ -119,7 +119,7 @@ async function onAutocomplete(interaction: AutocompleteInteraction) {
 process.on('uncaughtException', console.error);
 CLIENT.login(process.env.TOKEN);
 
-if (process.argv[2] !== "--no-screen") {
+if (process.argv[2] === "--screen") {
   app.get('/', (_, res) => res.sendFile(path.join(__dirname, 'index.html')));
   io.on('connection', socket => socket.emit('contentUpdate', global.game, tactics));
   server.listen(3000, () => console.log('Listening on http://localhost:3000'));

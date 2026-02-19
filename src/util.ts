@@ -21,7 +21,12 @@ export const app = express();
 export const server = http.createServer(app);
 export const io = new Server(server);
 
-export const db = new Database('./data/game.db');
+export const db = new Database('./data/database.db');
+db.prepare(`CREATE TABLE IF NOT EXISTS L7 (
+	user	VARCHAR(16) NOT NULL UNIQUE PRIMARY KEY,
+	toggle INTEGER NOT NULL
+);`).run();
+
 export const lucky7Toggles = loadLucky7Toggles();
 function loadLucky7Toggles(): Record<string, number> {
   const all = db.prepare("SELECT * FROM L7").all() as { user: string, toggle: number }[];

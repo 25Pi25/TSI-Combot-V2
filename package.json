@@ -5,10 +5,10 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node src/index.ts --no-screen",
-    "devb": "ts-node src/index.ts",
-    "start": "tsc && node ./dist/index.js --no-screen",
-    "startb": "tsc && node ./dist/index.js"
+    "dev": "ts-node src/index.ts",
+    "devb": "ts-node src/index.ts --screen",
+    "start": "tsc && node ./dist/index.js",
+    "startb": "tsc && node ./dist/index.js --screen"
   },
   "author": "sec",
   "license": "ISC",
