@@ -29,7 +29,7 @@ export default async function (interaction: ChatInputCommandInteraction) {
 }
 
 interface RichNumber {
-  string: string
+  string: string // where "num" is replaced by the value to complete the string. Does not directly contain the value.
   value: number
 }
 
@@ -49,7 +49,7 @@ class NumberToken extends RollToken {
 
 class DiceToken extends RollToken {
   // TODO: make static context while accessing non-static content
-  public VALUE_MODS: Record<string, (rolls: RichNumber[], value?: number) => RichNumber> = {
+  public VALUE_MODS: Record<string, (rolls: RichNumber[], value?: number) => RichNumber[]> = {
     kh: this.keepHigh,
     kl: this.keepLow,
     adv: this.keepHigh,
@@ -60,7 +60,7 @@ class DiceToken extends RollToken {
     min: this.min,
     rr: this.reroll
   }
-  public NON_VALUE_MODS: Record<string, (rolls: RichNumber[]) => RichNumber> = {
+  public NON_VALUE_MODS: Record<string, (rolls: RichNumber[]) => RichNumber[]> = {
     exp: this.explode
   }
   constructor(public count: number,
@@ -96,7 +96,7 @@ class DiceToken extends RollToken {
     let roll = rng(this.sides);
     const isLucky = this.lucky7 && roll == 7;
     return {
-      string: isLucky ? "7 (20)" : roll.toString(),
+      string: isLucky ? "7 (num)" : "num",
       value: isLucky ? 20 : roll
     };
   }
@@ -106,66 +106,68 @@ class DiceToken extends RollToken {
       result.push(this.rollDie());
     }
     if (this.modName && this.modName in this.VALUE_MODS) {
-      return this.VALUE_MODS[this.modName].bind(this)(result, this.modValue!);
+      result = this.VALUE_MODS[this.modName].bind(this)(result, this.modValue!);
     } else if (this.modName && this.modName in this.NON_VALUE_MODS) {
-      return this.NON_VALUE_MODS[this.modName].bind(this)(result);
+      result = this.NON_VALUE_MODS[this.modName].bind(this)(result);
     }
     return this.standardJoin(result);
   }
   public standardJoin = (numbers: RichNumber[]) => ({
-    string: `[${numbers.map(val => val.string).join(", ")}]`,
+    string: `[${numbers.map(val => val.string.replace("num", val.value.toString())).join(", ")}]`,
     value: numbers.reduce((a, b) => a + b.value, 0)
   });
   public keepHigh(rolls: RichNumber[], value = 1) {
     if (value > rolls.length) throw new Error("Too many dice to keep high.");
+    if (value == rolls.length) throw new Error("Cannot keep the same amount of dice.");
     const midPoint = rolls.length - value;
-    return this.standardJoin(rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
-      string: index < midPoint ? `~~${string}~~` : string,
+    return rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
+      string: index < midPoint ? `~~${value}~~` : string, // old value stays when slashed
       value: index < midPoint ? 0 : value
-    })));
+    }));
   }
   public keepLow(rolls: RichNumber[], value = 1) {
     if (value > rolls.length) throw new Error("Too many dice to keep low.");
+    if (value == rolls.length) throw new Error("Cannot keep the same amount of dice.");
     const midPoint = rolls.length - value;
-    return this.standardJoin(rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
-      string: index >= midPoint ? `~~${string}~~` : string,
+    return rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
+      string: index >= midPoint ? `~~${value}~~` : string, // old value stays when slashed
       value: index >= midPoint ? 0 : value
-    })));
+    }));
   }
-  public add(rolls: RichNumber[], value = 1) { return this.standardJoin(rolls.map(roll => (roll.value = roll.value + value, roll))); }
-  public sub(rolls: RichNumber[], value = 1) { return this.standardJoin(rolls.map(roll => (roll.value = roll.value - value, roll))); }
+  public add(rolls: RichNumber[], value = 1) { return rolls.map(roll => (roll.value = roll.value + value, roll)); }
+  public sub(rolls: RichNumber[], value = 1) { return rolls.map(roll => (roll.value = roll.value - value, roll)); }
   public max(rolls: RichNumber[], max = this.sides) {
-    return this.standardJoin(rolls.map(({ string, value }) => ({
+    return rolls.map(({ string, value }) => ({
       string: value > max ? `~~${string}~~ ${max}` : string,
       value: Math.min(value, max)
-    })));
+    }));
   }
   public min(rolls: RichNumber[], min = this.sides) {
-    return this.standardJoin(rolls.map(({ string, value }) => ({
+    return rolls.map(({ string, value }) => ({
       string: value < min ? `~~${string}~~ ${min}` : string,
       value: Math.max(value, min)
-    })));
+    }));
   }
   public explode(rolls: RichNumber[]) {
     for (let i = 0; i < rolls.length && i < DIE_UPPER_BOUND; i++) {
       if (rolls[i].value !== this.sides) continue;
       rolls.push(this.rollDie());
     }
-    return this.standardJoin(rolls.map(roll => roll.value != this.sides ? roll : {
+    return rolls.map(roll => roll.value != this.sides ? roll : {
       string: `${roll.string} (!)`,
       value: roll.value
-    }));
+    });
   }
   public reroll(rolls: RichNumber[], value = this.sides) {
     if (value > this.sides) throw new Error("Cannot reroll above given value.");
-    return this.standardJoin(rolls.map(roll => {
+    return rolls.map(roll => {
       if (roll.value > value) return roll;
       const newRoll = this.rollDie();
       return {
-        string: `~~${roll.string}~~ ${newRoll.string}`,
+        string: `~~${roll.value}~~ ${newRoll.string}`, // old value stays when slashed
         value: newRoll.value
       };
-    }));
+    });
   }
 }
 // dice roll, text, ac/dc, ac/dc value, other text (text/othertext is one or the other)
