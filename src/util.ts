@@ -26,6 +26,12 @@ db.prepare(`CREATE TABLE IF NOT EXISTS L7 (
 	user	VARCHAR(16) NOT NULL UNIQUE PRIMARY KEY,
 	toggle INTEGER NOT NULL
 );`).run();
+db.prepare(`CREATE TABLE IF NOT EXISTS quotes (
+	"text"	TEXT NOT NULL,
+	"people"	INTEGER NOT NULL COLLATE BINARY,
+	"sfw"	INTEGER NOT NULL COLLATE BINARY,
+	"shipping"	INTEGER NOT NULL COLLATE BINARY
+);`).run();
 
 export const lucky7Toggles = loadLucky7Toggles();
 function loadLucky7Toggles(): Record<string, number> {

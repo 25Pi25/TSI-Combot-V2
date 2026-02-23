@@ -3,7 +3,7 @@ import { lucky7Toggles } from '../../util';
 
 const VALUE_UPPER_BOUND = 1_000_000;
 const DIE_UPPER_BOUND = 50;
-const SIDE_UPPER_BOUND = 1_000;
+const SIDE_UPPER_BOUND = 100_000;
 const TERM_UPPER_BOUND = 20;
 const MOD_VALUE_UPPER_BOUND = 100;
 

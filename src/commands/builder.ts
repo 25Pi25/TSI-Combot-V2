@@ -1,13 +1,13 @@
-import { ApplicationCommandDataResolvable, ApplicationCommandType } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import { CLIENT } from "../util";
 import commands from "./index";
 import config from "../config";
 
-export default function () {
+export default async function () {
   for (const guild in config) {
     const commandList = CLIENT.guilds.cache.get(guild)?.commands;
     if (!commandList) continue;
-
+    // await commandList.set([]);
     for (const name in commands) {
       try {
         const { description } = commands[name];

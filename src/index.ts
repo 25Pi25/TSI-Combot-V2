@@ -4,7 +4,7 @@
  */
 import dotenv from 'dotenv';
 import commands from './commands/index';
-import { app, CLIENT, inBotChannel, io, normalized, server } from './util';
+import { app, CLIENT, io, normalized, server } from './util';
 import slashBuilder from './commands/builder'
 import { tactics } from './types';
 import { AutocompleteInteraction } from 'discord.js';
@@ -95,11 +95,12 @@ CLIENT.on('interactionCreate', async interaction => {
   const command = commands[interaction.commandName];
   if (!command) return await interaction.reply("What the fuck kind of command did you just send me");
   // try {
-  await command?.default(interaction);
+    await command.default(interaction);
   // } catch (error) {
-  //   console.log(`A problem occurred.\n${error}`);
+  //   if (!interaction.replied) interaction.reply("Something went wrong.");
   // }
 });
+
 // when the user is entering a name or a tactic, they can select from the options given
 async function onAutocomplete(interaction: AutocompleteInteraction) {
   const focusedOption = interaction.options.getFocused(true);
