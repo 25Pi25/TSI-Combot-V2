@@ -20,6 +20,9 @@ export const description = new SlashCommandBuilder()
     ])
   );
 
+
+const playerCapture = /\[p(\d+)\]/g;
+const twoPlayerCapture = /\[p(\d+), p(\d+)\]/g;
 export default async function (interaction: ChatInputCommandInteraction) {
   const people = interaction.options.getString("people")!;
   const peopleArray = people.split(",").map(person => person.trim());
@@ -33,9 +36,8 @@ export default async function (interaction: ChatInputCommandInteraction) {
     .get(peopleArray.length) as { text: string } | undefined;
   if (!quote) return interaction.reply("No quotes could be found with that search.");
   let text = quote.text;
-  for (const [index, person] of Object.entries(peopleArray)) {
-    const regexp = new RegExp(`\\[p${+index + 1}\\]`, 'g');
-    text = text.replace(regexp, person);
-  }
+  text = text.replace(playerCapture, (_, number) => peopleArray[parseInt(number) - 1])
+    .replace(twoPlayerCapture,
+      (_, number, number2) => `${peopleArray[parseInt(number) + 1]}, ${peopleArray[parseInt(number2) - 1]}`);
   await interaction.reply(text);
 }
