@@ -26,7 +26,7 @@ const twoPlayerCapture = /\[p(\d+), p(\d+)\]/g;
 export default async function (interaction: ChatInputCommandInteraction) {
   const people = interaction.options.getString("people")!;
   const peopleArray = people.split(",").map(person => person.trim());
-  const shipping = interaction.options.getString("shipping") ?? "true";
+  const shipping = interaction.options.getString("shipping") ?? "false";
   const clauses: string[] = [];
   clauses.push("people = ?")
   clauses.push("sfw = 1");
