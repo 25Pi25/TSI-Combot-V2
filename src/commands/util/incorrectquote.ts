@@ -10,26 +10,31 @@ export const description = new SlashCommandBuilder()
     .setRequired(true)
     .setMaxLength(100)
   )
-  .addBooleanOption(option => option
+  .addStringOption(option => option
     .setName("shipping")
-    .setDescription("Filter for quotes that involve shipping. Setting false filters out shipping quotes.")
+    .setDescription("Filters by shipping options. NO_SHIPPING by default.")
+    .addChoices([
+      { name: "NO_SHIPPING", value: "false" },
+      { name: "SHIPPING", value: "true" },
+      { name: "BOTH", value: "null" },
+    ])
   );
 
 export default async function (interaction: ChatInputCommandInteraction) {
   const people = interaction.options.getString("people")!;
   const peopleArray = people.split(",").map(person => person.trim());
-  const shipping = interaction.options.getBoolean("shipping");
+  const shipping = interaction.options.getString("shipping") ?? "true";
   const clauses: string[] = [];
   clauses.push("people = ?")
   clauses.push("sfw = 1");
-  if (shipping !== null) clauses.push(`shipping = ${+shipping}`);
+  if (shipping != "null") clauses.push(`shipping = ${shipping}`);
 
   const quote = db.prepare(`SELECT text FROM quotes WHERE ${clauses ? clauses.join(" AND ") : ""} ORDER BY RANDOM() LIMIT 1`)
     .get(peopleArray.length) as { text: string } | undefined;
   if (!quote) return interaction.reply("No quotes could be found with that search.");
   let text = quote.text;
   for (const [index, person] of Object.entries(peopleArray)) {
-    const regexp = new RegExp(`\\[p${+index+1}\\]`, 'g');
+    const regexp = new RegExp(`\\[p${+index + 1}\\]`, 'g');
     text = text.replace(regexp, person);
   }
   await interaction.reply(text);

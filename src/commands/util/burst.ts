@@ -17,13 +17,17 @@ export const description = new SlashCommandBuilder()
   );
 
 export default async function (interaction: ChatInputCommandInteraction) {
-  const things = interaction.options.getString("targets")!;
-  const thingsArray = things.split(",").map(thing => thing.trim());
+  const targets = interaction.options.getString("targets")!;
+  const targetsArray = targets.split(",").map(target => target.trim());
   const max = interaction.options.getInteger("bursts") ?? 1;
-  const shuffledThings = thingsArray
-    .map<[number, string]>(thing => [Math.random(), thing])
-    .sort(([a, _],[b, __]) => a-b)
-    .map(([_, thing]) => thing);
-  const allThings = shuffledThings.slice(0, max);
-  await interaction.reply(`Burst${max > 1 && thingsArray.length > 1 ? "s" : ""} ➜ ${allThings.join(", ")}`);
+
+  await interaction.reply(`Burst${max > 1 && targetsArray.length > 1 ? "s" : ""} ➜ ${burst(targetsArray, max).join(", ")}`);
+}
+
+export function burst(targets: string[], max: number): string[] {
+  const shuffledTargets = targets
+    .map<[number, string]>(target => [Math.random(), target])
+    .sort(([a, _], [b, __]) => a - b)
+    .map(([_, target]) => target);
+  return shuffledTargets.slice(0, max);
 }

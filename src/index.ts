@@ -7,12 +7,13 @@ import commands from './commands/index';
 import { app, CLIENT, io, normalized, server } from './util';
 import slashBuilder from './commands/builder'
 import { tactics } from './types';
-import { AutocompleteInteraction } from 'discord.js';
+import { AutocompleteInteraction, MessageFlags } from 'discord.js';
 import path from 'path';
 import { addTactic } from './commands/game state/add_tactic';
 import { removeTactic } from './commands/game state/remove_tactic';
 import { nextTurn } from './commands/game state/next_turn';
 import { roll } from './commands/util/roll';
+import { burst } from './commands/util/burst';
 dotenv.config();
 
 const TACTIC_ADD_REGEX = /([^ \/@|]+)(?:\/([^ \/@|]+))?(?:\/([^ \/@|]+))?(?:@([^ \/@|]+))?(?:\|([^ \/@|]+))?/ // wow that looks ugly
@@ -33,11 +34,20 @@ CLIENT.on('messageCreate', async message => {
     });
     if (!success) setTimeout(() => item.delete(), 10_000);
   }
+  if (message.content.startsWith("?burst ")) {
+    const targets = message.content.slice(7).split(' ');
+    const checkMax = /\d+/.exec(targets[0])
+    let max = 1;
+    if (checkMax != null) max = Math.max(1, parseInt(targets[0]));
+    message.channel.send({
+      content: `<@${message.author.id}> Burst${max > 1 && targets.length > 1 ? 's' : ''} ➜ ${burst(targets, max).join(", ")}`,
+      allowedMentions: { parse: [] }
+    });
+  }
   if (message.author.id == '269333441982496769' && message.content.startsWith("?d ")) {// aint no fuckin way i'm giving eval to anyone else
     const evals = eval(`(()=>{${message.content.slice(2).trim()}})()`);
     if (typeof evals !== 'undefined') {
-      message.channel.send(evals.toString())
-        .then(m => setTimeout(() => m.delete(), 10000));
+      message.channel.send(evals.toString() || '\"\"')
     }
   }
   if (message.author.id == '269333441982496769' && message.content.startsWith("?a ")) { // we'll see if it catches on with others
@@ -95,7 +105,7 @@ CLIENT.on('interactionCreate', async interaction => {
   const command = commands[interaction.commandName];
   if (!command) return await interaction.reply("What the fuck kind of command did you just send me");
   // try {
-    await command.default(interaction);
+  await command.default(interaction);
   // } catch (error) {
   //   if (!interaction.replied) interaction.reply("Something went wrong.");
   // }
