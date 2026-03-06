@@ -1,5 +1,4 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { readFileSync } from 'fs';
 import { db, lucky7Toggles } from '../../util';
 
 export const description = new SlashCommandBuilder()

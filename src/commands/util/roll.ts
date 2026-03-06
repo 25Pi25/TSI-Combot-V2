@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, MessageFlags, InteractionReplyOptions, EmbedBuilder, APIEmbed } from 'discord.js';
-import { lucky7Toggles } from '../../util';
+import { lucky7Toggles, smallestIndexes } from '../../util';
 
 const VALUE_UPPER_BOUND = 1_000_000;
 const DIE_UPPER_BOUND = 50;
@@ -120,18 +120,20 @@ class DiceToken extends RollToken {
     if (value > rolls.length) throw new Error("Too many dice to keep high.");
     if (value == rolls.length) throw new Error("Cannot keep the same amount of dice.");
     const midPoint = rolls.length - value;
-    return rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
-      string: index < midPoint ? `~~${value}~~` : string, // old value stays when slashed
-      value: index < midPoint ? 0 : value
+    const targetIndexes = new Set(smallestIndexes(rolls, midPoint, (a,b) => a.value - b.value))
+    return rolls.map(({ string, value }, index) => ({
+      string: targetIndexes.has(index) ? `~~${value}~~` : string, // old value stays when slashed
+      value: targetIndexes.has(index) ? 0 : value
     }));
   }
   public keepLow(rolls: RichNumber[], value = 1) {
     if (value > rolls.length) throw new Error("Too many dice to keep low.");
     if (value == rolls.length) throw new Error("Cannot keep the same amount of dice.");
     const midPoint = rolls.length - value;
-    return rolls.toSorted((a,b) => a.value - b.value).map(({ string, value }, index) => ({
-      string: index >= midPoint ? `~~${value}~~` : string, // old value stays when slashed
-      value: index >= midPoint ? 0 : value
+    const targetIndexes = new Set(smallestIndexes(rolls, midPoint, (a,b) => b.value - a.value))
+    return rolls.map(({ string, value }, index) => ({
+      string: targetIndexes.has(index) ? `~~${value}~~` : string, // old value stays when slashed
+      value: targetIndexes.has(index) ? 0 : value
     }));
   }
   public add(rolls: RichNumber[], value = 1) { return rolls.map(roll => (roll.value = roll.value + value, roll)); }
@@ -175,7 +177,7 @@ const ROLL_REGEX = /^([^;]*?)(?:\|(?:([^;]*?)(?:(ac|dc) (\d+))|([^;]+?)))?$/i
 // dice count, dice sides, lucky 7, modifier name, modifier value, flat number
 const ROLL_TERM_REGEX = /^(\d*)d(\d+)(!?)(?:\/([a-z]+)(?:\:(\d+))?)?$|^(\d+)$/;
 export function roll(string: string, user: string): [APIEmbed[], true] | [string, false] {
-  const diceTerms = string.split(";").filter(term => term);
+  const diceTerms = string.split(";").filter(term => term).map(term => term.trim());
   if (diceTerms.length == 0) return ["No terms were given.", false];
   if (diceTerms.length > 5) return ["Cannot roll more than 5 terms at a time.", false];
   const embeds: APIEmbed[] = [];

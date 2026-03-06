@@ -1,5 +1,4 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { db } from '../../util';
 
 export const description = new SlashCommandBuilder()
   .setName("burst")

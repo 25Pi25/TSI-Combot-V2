@@ -137,3 +137,10 @@ export function tacticToString({ name, input, turns }: Tactic, info?: TacticInfo
   if (turns > 1) tacticString += ` [${turns} Turns]`;
   return tacticString;
 }
+
+export function smallestIndexes<T>(arr: T[], k: number, compare: (a: T, b: T) => number): number[] {
+  return arr.map((value, index) => ({ value, index }))
+    .toSorted(({ value: a }, { value: b }) => compare(a, b))
+    .slice(0, k)
+    .map(item => item.index);
+}
