@@ -25,6 +25,7 @@ CLIENT.on('clientReady', () => { console.log("Ready!"); slashBuilder(); });
 //   if (msg?.isSendable()) msg.send("let's do this bitchesssssss")
 // });
 CLIENT.on('messageCreate', async message => {
+  if (message.author.bot) return;
   if (message.content.startsWith("?r ") || message.content.startsWith("?roll ")) {
     const [reply, success] = roll(message.content.slice(2).trim(), message.author.id);
     const item = await message.channel.send({
