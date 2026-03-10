@@ -173,7 +173,7 @@ class DiceToken extends RollToken {
   }
 }
 // dice roll, text, ac/dc, ac/dc value, other text (text/othertext is one or the other)
-const ROLL_REGEX = /^([^;]*?)(?:\|(?:([^;]*?)(?:(ac|dc) (\d+))|([^;]+?)))?$/i
+const ROLL_REGEX = /^([^;]*?)(?:\|(?:([^;]*?)(?:(ac|dc) ?(\d+))|([^;]+?)))?$/i
 // dice count, dice sides, lucky 7, modifier name, modifier value, flat number
 const ROLL_TERM_REGEX = /^(\d*)d(\d+)(!?)(?:\/([a-z]+)(?:\:(\d+))?)?$|^(\d+)$/;
 export function roll(string: string, user: string): [APIEmbed[], true] | [string, false] {
