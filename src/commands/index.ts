@@ -9,6 +9,7 @@ import * as roll from './util/roll';
 import * as lucky7 from './util/lucky7';
 import * as incorrectquote from './util/incorrectquote';
 import * as burst from './util/burst';
+import * as weather from './util/weather';
 import * as random_move from './util/random_move';
 import * as resetgame from './game state/reset_game';
 import * as reloadgame from './game state/reload_game';
@@ -40,7 +41,8 @@ export default {
   lucky7,
   random_move,
   incorrectquote,
-  burst
+  burst,
+  weather
 } satisfies CommandModule as CommandModule;
 
 type CommandModule = Record<string, {
