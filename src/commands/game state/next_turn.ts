@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { isAdmin, searchPlayer, searchTactic } from '../../util';
-import { PlayerInfo, Tactic, tactics } from 'src/types';
+import { PlayerInfo, Tactic, tactics } from '../../types';
 import { removeTactic } from './remove_tactic';
 
 export const description = new SlashCommandBuilder()
