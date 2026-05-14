@@ -6,7 +6,7 @@ export const description = new SlashCommandBuilder()
   .setDescription("Determine a new weather state.")
   .addIntegerOption(option => option
     .setName("last_weather")
-    .setDescription("The value of the last weather roll. Default 35.")
+    .setDescription("The value of the last weather roll. Default CLEAR.")
     .setMinValue(-100)
     .setMaxValue(100)
   )
@@ -21,6 +21,7 @@ export const description = new SlashCommandBuilder()
     .setDescription("Determines if a flood happens on the lowest roll. Default false.")
   );
 
+const CLEAR = 35;
 const weatherDescription = {
   extreme: "Roll extreme weather event table.",
   rain: "Set weather to Rain.",
@@ -71,7 +72,7 @@ function getExtremeWeather(roll: number): { text?: string, weatherScore?: number
 }
 
 export default async function (interaction: ChatInputCommandInteraction) {
-  const lastWeather = interaction.options.getInteger("last_weather") ?? 35;
+  const lastWeather = interaction.options.getInteger("last_weather") ?? CLEAR;
   const lockDie = interaction.options.getInteger("lock_die");
   const floodDanger = interaction.options.getBoolean("flood_danger") ?? false;
   const embed = new EmbedBuilder().setTitle(`Weather Roll, Last ${getWeather(lastWeather)} (${lastWeather})`);
@@ -106,7 +107,7 @@ function getNewWeather(lastWeather: number, lockDie: number | null, floodDanger:
   let newWeather: number;
   switch (weatherType) {
     case 'clear':
-      newWeather = 20;
+      newWeather = CLEAR;
       embedResultString += `d100 Type → ${weatherCategory} (Set to Clear)\n`;
       break;
     default:
