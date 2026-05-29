@@ -118,7 +118,7 @@ function getNewWeather(lastWeather: number, lockDie: number | null, floodDanger:
       embedResultString += `${lastWeather}+3d20-31 → ${lastWeather}+[${rolls.join(", ")}]-31 → ${newWeather} (${getWeather(newWeather)})\n`;
       break;
     case 'rain':
-      newWeather = 8;
+      newWeather = 13;
       embedResultString += `d100 Type → ${weatherCategory} (Set to Rain)\n`;
       break;
     case 'extreme':
